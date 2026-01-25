@@ -189,24 +189,17 @@ describe("onboarding helpers", () => {
       expect(result).toBe("#mychannel");
     });
 
-    it("should return undefined when empty string provided", async () => {
+    it("should require a non-empty channel name", async () => {
       const { promptChannelName } = await import("./onboarding.js");
 
       mockPromptText.mockResolvedValue("");
 
-      const result = await promptChannelName(mockPrompter, null);
+      await promptChannelName(mockPrompter, null);
 
-      expect(result).toBeUndefined();
-    });
-
-    it("should return undefined when whitespace only", async () => {
-      const { promptChannelName } = await import("./onboarding.js");
-
-      mockPromptText.mockResolvedValue("   ");
-
-      const result = await promptChannelName(mockPrompter, null);
-
-      expect(result).toBeUndefined();
+      const { validate } = mockPromptText.mock.calls[0]?.[0] ?? {};
+      expect(validate?.("")).toBe("Required");
+      expect(validate?.("   ")).toBe("Required");
+      expect(validate?.("#chan")).toBeUndefined();
     });
   });
 

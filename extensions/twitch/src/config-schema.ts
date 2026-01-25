@@ -16,8 +16,8 @@ const TwitchAccountSchema = z.object({
   accessToken: z.string(),
   /** Twitch client ID (from Twitch Developer Portal or twitchtokengenerator.com) */
   clientId: z.string().optional(),
-  /** Channel name to join (defaults to username) */
-  channel: z.string().optional(),
+  /** Channel name to join */
+  channel: z.string().min(1),
   /** Enable this account */
   enabled: z.boolean().optional(),
   /** Allowlist of Twitch user IDs who can interact with the bot (use IDs for safety, not usernames) */

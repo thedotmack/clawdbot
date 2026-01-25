@@ -153,14 +153,15 @@ async function promptClientId(
 async function promptChannelName(
   prompter: WizardPrompter,
   account: TwitchAccountConfig | null,
-): Promise<string | undefined> {
+): Promise<string> {
   const channelName = String(
     await prompter.text({
-      message: "Channel to join (default: bot username)",
+      message: "Channel to join",
       initialValue: account?.channel ?? "",
+      validate: (value) => (value?.trim() ? undefined : "Required"),
     }),
   ).trim();
-  return channelName || undefined;
+  return channelName;
 }
 
 /**

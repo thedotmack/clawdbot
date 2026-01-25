@@ -50,7 +50,7 @@ Minimal config:
       username: "clawdbot",              // Bot's Twitch account
       accessToken: "oauth:abc123...",    // OAuth Access Token (or use CLAWDBOT_TWITCH_ACCESS_TOKEN env var)
       clientId: "xyz789...",             // Client ID from Token Generator
-      channel: "vevisk",                 // Which Twitch channel's chat to join
+      channel: "vevisk",                 // Which Twitch channel's chat to join (required)
       allowFrom: ["123456789"]           // (recommended) Your Twitch user ID only
     }
   }
@@ -279,7 +279,7 @@ If you see "token refresh disabled (no refresh token)":
 - `username` - Bot username
 - `accessToken` - OAuth access token with `chat:read` and `chat:write`
 - `clientId` - Twitch Client ID (from Token Generator or your app)
-- `channel` - Channel to join
+- `channel` - Channel to join (required)
 - `enabled` - Enable this account (default: `true`)
 - `clientSecret` - Optional: For automatic token refresh
 - `refreshToken` - Optional: For automatic token refresh
