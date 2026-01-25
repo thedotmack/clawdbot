@@ -122,13 +122,14 @@ async function processTwitchMessage(params: {
           payload,
           channel: message.channel,
           account,
+          accountId,
+          config,
+          tableMode,
           runtime,
           statusSink,
         });
       },
     },
-    runtime,
-    tableMode,
   });
 }
 
@@ -139,26 +140,37 @@ async function deliverTwitchReply(params: {
   payload: ReplyPayload;
   channel: string;
   account: TwitchAccountConfig;
+  accountId: string;
+  config: unknown;
+  tableMode: "off" | "plain" | "markdown" | "bullets" | "code";
   runtime: TwitchRuntimeEnv;
   statusSink?: (patch: { lastInboundAt?: number; lastOutboundAt?: number }) => void;
 }): Promise<void> {
-  const { payload, channel, account, runtime, statusSink } = params;
+  const { payload, channel, account, accountId, config, tableMode, runtime, statusSink } = params;
 
   try {
-    const clientManager = getOrCreateClientManager(account.accountId ?? "default", {
+    const clientManager = getOrCreateClientManager(accountId, {
       info: (msg) => runtime.log?.(`[twitch] ${msg}`),
       warn: (msg) => runtime.log?.(`[twitch] ${msg}`),
       error: (msg) => runtime.error?.(`[twitch] ${msg}`),
       debug: (msg) => runtime.log?.(`[twitch] ${msg}`),
     });
 
-    const client = await clientManager.getClient(account, null, account.accountId ?? "default");
+    const client = await clientManager.getClient(
+      account,
+      config as Parameters<typeof clientManager.getClient>[1],
+      accountId,
+    );
     if (!client) {
       runtime.error?.(`[twitch] No client available for sending reply`);
       return;
     }
 
     // Send the reply
+    if (!payload.text) {
+      runtime.error?.(`[twitch] No text to send in reply payload`);
+      return;
+    }
     await client.say(channel, payload.text);
     statusSink?.({ lastOutboundAt: Date.now() });
   } catch (err) {
@@ -252,8 +264,6 @@ export async function monitorTwitchProvider(
 
   // Handle abort signal
   abortSignal.addEventListener("abort", stop, { once: true });
-
-  runtime.log?.(`[twitch] Monitor started for account ${accountId}`);
 
   return { stop };
 }
