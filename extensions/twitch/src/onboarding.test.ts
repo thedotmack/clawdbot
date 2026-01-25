@@ -25,7 +25,7 @@ const mockPrompter: WizardPrompter = {
 
 const mockAccount: TwitchAccountConfig = {
   username: "testbot",
-  token: "oauth:test123",
+  accessToken: "oauth:test123",
   clientId: "test-client-id",
   channel: "#testchannel",
 };
@@ -49,7 +49,7 @@ describe("onboarding helpers", () => {
 
       expect(result).toBe("oauth:test123");
       expect(mockPromptConfirm).toHaveBeenCalledWith({
-        message: "Token already configured. Keep it?",
+        message: "Access token already configured. Keep it?",
         initialValue: true,
       });
       expect(mockPromptText).not.toHaveBeenCalled();

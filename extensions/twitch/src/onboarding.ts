@@ -26,7 +26,7 @@ function setTwitchAccount(
   const existing = getAccountConfig(cfg, DEFAULT_ACCOUNT_ID);
   const merged: TwitchAccountConfig = {
     username: account.username ?? existing?.username ?? "",
-    token: account.token ?? existing?.token ?? "",
+    accessToken: account.accessToken ?? existing?.accessToken ?? "",
     clientId: account.clientId ?? existing?.clientId ?? "",
     channel: account.channel ?? existing?.channel ?? "",
     enabled: account.enabled ?? existing?.enabled ?? true,
@@ -85,12 +85,12 @@ async function promptToken(
   account: TwitchAccountConfig | null,
   envToken: string | undefined,
 ): Promise<string> {
-  const existingToken = account?.token ?? "";
+  const existingToken = account?.accessToken ?? "";
 
   // If we have an existing token and no env var, ask if we should keep it
   if (existingToken && !envToken) {
     const keepToken = await prompter.confirm({
-      message: "Token already configured. Keep it?",
+      message: "Access token already configured. Keep it?",
       initialValue: true,
     });
     if (keepToken) {
@@ -225,7 +225,7 @@ async function configureWithEnvToken(
   const cfgWithAccount = setTwitchAccount(cfg, {
     username,
     clientId,
-    token: "", // Will use env var
+    accessToken: "", // Will use env var
     enabled: true,
   });
 
@@ -275,7 +275,7 @@ const dmPolicy: ChannelOnboardingDmPolicy = {
     return setTwitchAccessControl(cfg as ClawdbotConfig, allowedRoles, false);
   },
   promptAllowFrom: async ({ cfg, prompter }) => {
-    const account = getTwitchAccount(cfg as ClawdbotConfig);
+    const account = getAccountConfig(cfg, DEFAULT_ACCOUNT_ID);
     const existingAllowFrom = account?.allowFrom ?? [];
 
     const entry = await prompter.text({
@@ -319,7 +319,7 @@ export const twitchOnboardingAdapter: ChannelOnboardingAdapter = {
     const envToken = process.env.CLAWDBOT_TWITCH_ACCESS_TOKEN?.trim();
 
     // Check if env var is set and config is empty
-    if (envToken && !account?.token) {
+    if (envToken && !account?.accessToken) {
       const envResult = await configureWithEnvToken(
         cfg,
         prompter,
@@ -342,7 +342,7 @@ export const twitchOnboardingAdapter: ChannelOnboardingAdapter = {
 
     const cfgWithAccount = setTwitchAccount(cfg, {
       username,
-      token,
+      accessToken: token,
       clientId,
       channel: channelName,
       clientSecret,

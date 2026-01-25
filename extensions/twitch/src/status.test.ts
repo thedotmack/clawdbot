@@ -50,7 +50,7 @@ describe("status", () => {
       expect(disabledIssue).toBeDefined();
     });
 
-    it("should detect missing clientId when account configured", () => {
+    it("should detect missing clientId when account configured (simplified config)", () => {
       const snapshots: ChannelAccountSnapshot[] = [
         {
           accountId: "default",
@@ -63,13 +63,9 @@ describe("status", () => {
       const mockCfg = {
         channels: {
           twitch: {
-            accounts: {
-              default: {
-                username: "testbot",
-                token: "oauth:test123",
-                // clientId missing
-              },
-            },
+            username: "testbot",
+            accessToken: "oauth:test123",
+            // clientId missing
           },
         },
       };
@@ -80,7 +76,7 @@ describe("status", () => {
       expect(clientIdIssue).toBeDefined();
     });
 
-    it("should warn about oauth: prefix in token", () => {
+    it("should warn about oauth: prefix in token (simplified config)", () => {
       const snapshots: ChannelAccountSnapshot[] = [
         {
           accountId: "default",
@@ -93,13 +89,9 @@ describe("status", () => {
       const mockCfg = {
         channels: {
           twitch: {
-            accounts: {
-              default: {
-                username: "testbot",
-                token: "oauth:test123", // has prefix
-                clientId: "test-id",
-              },
-            },
+            username: "testbot",
+            accessToken: "oauth:test123", // has prefix
+            clientId: "test-id",
           },
         },
       };
@@ -111,7 +103,7 @@ describe("status", () => {
       expect(prefixIssue?.kind).toBe("config");
     });
 
-    it("should detect clientSecret without refreshToken", () => {
+    it("should detect clientSecret without refreshToken (simplified config)", () => {
       const snapshots: ChannelAccountSnapshot[] = [
         {
           accountId: "default",
@@ -124,15 +116,11 @@ describe("status", () => {
       const mockCfg = {
         channels: {
           twitch: {
-            accounts: {
-              default: {
-                username: "testbot",
-                token: "oauth:test123",
-                clientId: "test-id",
-                clientSecret: "secret123",
-                // refreshToken missing
-              },
-            },
+            username: "testbot",
+            accessToken: "oauth:test123",
+            clientId: "test-id",
+            clientSecret: "secret123",
+            // refreshToken missing
           },
         },
       };
@@ -143,7 +131,7 @@ describe("status", () => {
       expect(secretIssue).toBeDefined();
     });
 
-    it("should detect empty allowFrom array", () => {
+    it("should detect empty allowFrom array (simplified config)", () => {
       const snapshots: ChannelAccountSnapshot[] = [
         {
           accountId: "default",
@@ -156,14 +144,10 @@ describe("status", () => {
       const mockCfg = {
         channels: {
           twitch: {
-            accounts: {
-              default: {
-                username: "testbot",
-                token: "test123",
-                clientId: "test-id",
-                allowFrom: [], // empty array
-              },
-            },
+            username: "testbot",
+            accessToken: "test123",
+            clientId: "test-id",
+            allowFrom: [], // empty array
           },
         },
       };
@@ -174,7 +158,7 @@ describe("status", () => {
       expect(allowFromIssue).toBeDefined();
     });
 
-    it("should detect allowedRoles 'all' with allowFrom conflict", () => {
+    it("should detect allowedRoles 'all' with allowFrom conflict (simplified config)", () => {
       const snapshots: ChannelAccountSnapshot[] = [
         {
           accountId: "default",
@@ -187,15 +171,11 @@ describe("status", () => {
       const mockCfg = {
         channels: {
           twitch: {
-            accounts: {
-              default: {
-                username: "testbot",
-                token: "test123",
-                clientId: "test-id",
-                allowedRoles: ["all"],
-                allowFrom: ["123456"], // conflict!
-              },
-            },
+            username: "testbot",
+            accessToken: "test123",
+            clientId: "test-id",
+            allowedRoles: ["all"],
+            allowFrom: ["123456"], // conflict!
           },
         },
       };

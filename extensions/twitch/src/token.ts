@@ -1,8 +1,12 @@
 /**
- * Twitch token resolution with environment variable support.
+ * Twitch access token resolution with environment variable support.
  *
- * Supports reading Twitch OAuth tokens from config or environment variable.
+ * Supports reading Twitch OAuth access tokens from config or environment variable.
  * The CLAWDBOT_TWITCH_ACCESS_TOKEN env var is only used for the default account.
+ *
+ * Token resolution priority:
+ * 1. Account access token from merged config (accounts.{id} or base-level for default)
+ * 2. Environment variable: CLAWDBOT_TWITCH_ACCESS_TOKEN (default account only)
  */
 
 import type { ClawdbotConfig } from "../../../src/config/config.js";
@@ -27,12 +31,14 @@ function normalizeTwitchToken(raw?: string | null): string | undefined {
 }
 
 /**
- * Resolve Twitch token from config or environment variable.
+ * Resolve Twitch access token from config or environment variable.
  *
  * Priority:
- * 1. Account token: channels.twitch.accounts.{accountId}.token
- * 2. Base config token: channels.twitch.token (default account only)
- * 3. Environment variable: CLAWDBOT_TWITCH_ACCESS_TOKEN (default account only)
+ * 1. Account access token (from merged config - base-level for default, or accounts.{accountId})
+ * 2. Environment variable: CLAWDBOT_TWITCH_ACCESS_TOKEN (default account only)
+ *
+ * The getAccountConfig function handles merging base-level config with accounts.default,
+ * so this logic works for both simplified and multi-account patterns.
  *
  * @param cfg - Clawdbot config
  * @param opts - Options including accountId and optional envToken override
@@ -43,26 +49,33 @@ export function resolveTwitchToken(
   opts: { accountId?: string | null; envToken?: string | null } = {},
 ): TwitchTokenResolution {
   const accountId = normalizeAccountId(opts.accountId);
+
+  // Get merged account config (handles both simplified and multi-account patterns)
   const twitchCfg = cfg?.channels?.twitch;
   const accountCfg =
-    accountId !== DEFAULT_ACCOUNT_ID
-      ? twitchCfg?.accounts?.[accountId]
-      : twitchCfg?.accounts?.[DEFAULT_ACCOUNT_ID];
+    accountId === DEFAULT_ACCOUNT_ID
+      ? (twitchCfg?.accounts?.[DEFAULT_ACCOUNT_ID] as Record<string, unknown> | undefined)
+      : (twitchCfg?.accounts?.[accountId as string] as Record<string, unknown> | undefined);
 
-  // 1. Account token (highest priority)
-  const accountToken = normalizeTwitchToken(accountCfg?.token ?? undefined);
-  if (accountToken) {
-    return { token: accountToken, source: "config" };
+  // For default account, also check base-level config
+  let token: string | undefined;
+  if (accountId === DEFAULT_ACCOUNT_ID) {
+    // Base-level config takes precedence
+    token = normalizeTwitchToken(
+      (typeof twitchCfg?.accessToken === "string" ? twitchCfg.accessToken : undefined) ||
+        (accountCfg?.accessToken as string | undefined),
+    );
+  } else {
+    // Non-default accounts only use accounts object
+    token = normalizeTwitchToken(accountCfg?.accessToken as string | undefined);
   }
 
-  // 2. Base config token (default account only)
+  if (token) {
+    return { token, source: "config" };
+  }
+
+  // Environment variable (default account only)
   const allowEnv = accountId === DEFAULT_ACCOUNT_ID;
-  const configToken = allowEnv ? normalizeTwitchToken(twitchCfg?.token ?? undefined) : undefined;
-  if (configToken) {
-    return { token: configToken, source: "config" };
-  }
-
-  // 3. Environment variable (default account only)
   const envToken = allowEnv
     ? normalizeTwitchToken(opts.envToken ?? process.env.CLAWDBOT_TWITCH_ACCESS_TOKEN)
     : undefined;

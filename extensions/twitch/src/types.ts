@@ -49,8 +49,8 @@ export interface TwitchPluginConfig {
 export interface TwitchAccountConfig {
   /** Twitch username */
   username: string;
-  /** Twitch OAuth token (requires chat:read and chat:write scopes) */
-  token: string;
+  /** Twitch OAuth access token (requires chat:read and chat:write scopes) */
+  accessToken: string;
   /** Twitch client ID (from Twitch Developer Portal or twitchtokengenerator.com) */
   clientId: string;
   /** Channel name to join (required) */

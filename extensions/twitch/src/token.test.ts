@@ -13,19 +13,30 @@ import { resolveTwitchToken, type TwitchTokenSource } from "./token.js";
 import type { ClawdbotConfig } from "clawdbot/plugin-sdk";
 
 describe("token", () => {
-  const mockConfig = {
+  // Multi-account config for testing non-default accounts
+  const mockMultiAccountConfig = {
     channels: {
       twitch: {
         accounts: {
           default: {
             username: "testbot",
-            token: "oauth:config-token",
+            accessToken: "oauth:config-token",
           },
           other: {
             username: "otherbot",
-            token: "oauth:other-token",
+            accessToken: "oauth:other-token",
           },
         },
+      },
+    },
+  } as unknown as ClawdbotConfig;
+
+  // Simplified single-account config
+  const mockSimplifiedConfig = {
+    channels: {
+      twitch: {
+        username: "testbot",
+        accessToken: "oauth:config-token",
       },
     },
   } as unknown as ClawdbotConfig;
@@ -40,42 +51,38 @@ describe("token", () => {
   });
 
   describe("resolveTwitchToken", () => {
-    it("should resolve token from config for default account", () => {
-      const result = resolveTwitchToken(mockConfig, { accountId: "default" });
+    it("should resolve token from simplified config for default account", () => {
+      const result = resolveTwitchToken(mockSimplifiedConfig, { accountId: "default" });
 
       expect(result.token).toBe("oauth:config-token");
       expect(result.source).toBe("config");
     });
 
-    it("should resolve token from config for non-default account", () => {
-      const result = resolveTwitchToken(mockConfig, { accountId: "other" });
+    it("should resolve token from config for non-default account (multi-account)", () => {
+      const result = resolveTwitchToken(mockMultiAccountConfig, { accountId: "other" });
 
       expect(result.token).toBe("oauth:other-token");
       expect(result.source).toBe("config");
     });
 
-    it("should prioritize config token over env var", () => {
+    it("should prioritize config token over env var (simplified config)", () => {
       process.env.CLAWDBOT_TWITCH_ACCESS_TOKEN = "oauth:env-token";
 
-      const result = resolveTwitchToken(mockConfig, { accountId: "default" });
+      const result = resolveTwitchToken(mockSimplifiedConfig, { accountId: "default" });
 
       // Config token should be used even if env var exists
       expect(result.token).toBe("oauth:config-token");
       expect(result.source).toBe("config");
     });
 
-    it("should use env var when config token is empty", () => {
+    it("should use env var when config token is empty (simplified config)", () => {
       process.env.CLAWDBOT_TWITCH_ACCESS_TOKEN = "oauth:env-token";
 
       const configWithEmptyToken = {
         channels: {
           twitch: {
-            accounts: {
-              default: {
-                username: "testbot",
-                token: "",
-              },
-            },
+            username: "testbot",
+            accessToken: "",
           },
         },
       } as unknown as ClawdbotConfig;
@@ -86,16 +93,12 @@ describe("token", () => {
       expect(result.source).toBe("env");
     });
 
-    it("should return empty token when neither config nor env has token", () => {
+    it("should return empty token when neither config nor env has token (simplified config)", () => {
       const configWithoutToken = {
         channels: {
           twitch: {
-            accounts: {
-              default: {
-                username: "testbot",
-                token: "",
-              },
-            },
+            username: "testbot",
+            accessToken: "",
           },
         },
       } as unknown as ClawdbotConfig;
@@ -106,7 +109,7 @@ describe("token", () => {
       expect(result.source).toBe("none");
     });
 
-    it("should not use env var for non-default accounts", () => {
+    it("should not use env var for non-default accounts (multi-account)", () => {
       process.env.CLAWDBOT_TWITCH_ACCESS_TOKEN = "oauth:env-token";
 
       const configWithoutToken = {
@@ -115,7 +118,7 @@ describe("token", () => {
             accounts: {
               secondary: {
                 username: "secondary",
-                token: "",
+                accessToken: "",
               },
             },
           },

@@ -86,7 +86,7 @@ export const twitchPlugin: ChannelPlugin<TwitchAccountConfig> = {
         // Return a default/empty account if not configured
         return {
           username: "",
-          token: "",
+          accessToken: "",
           clientId: "",
           enabled: false,
         } as TwitchAccountConfig;
@@ -112,7 +112,7 @@ export const twitchPlugin: ChannelPlugin<TwitchAccountConfig> = {
       return {
         accountId: DEFAULT_ACCOUNT_ID,
         enabled: account?.enabled !== false,
-        configured: account ? isAccountConfigured(account, account?.token) : false,
+        configured: account ? isAccountConfigured(account, account?.accessToken) : false,
       };
     },
   },

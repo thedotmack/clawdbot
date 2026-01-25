@@ -30,28 +30,55 @@ describe("parsePluginConfig", () => {
 });
 
 describe("getAccountConfig", () => {
-  const mockCoreConfig = {
+  const mockMultiAccountConfig = {
     channels: {
       twitch: {
         accounts: {
           default: {
             username: "testbot",
-            token: "oauth:test123",
+            accessToken: "oauth:test123",
+          },
+          secondary: {
+            username: "secondbot",
+            accessToken: "oauth:secondary",
           },
         },
       },
     },
   };
 
-  it("returns account config for valid account ID", () => {
-    const result = getAccountConfig(mockCoreConfig, "default");
+  const mockSimplifiedConfig = {
+    channels: {
+      twitch: {
+        username: "testbot",
+        accessToken: "oauth:test123",
+      },
+    },
+  };
+
+  it("returns account config for valid account ID (multi-account)", () => {
+    const result = getAccountConfig(mockMultiAccountConfig, "default");
 
     expect(result).not.toBeNull();
     expect(result?.username).toBe("testbot");
   });
 
+  it("returns account config for default account (simplified config)", () => {
+    const result = getAccountConfig(mockSimplifiedConfig, "default");
+
+    expect(result).not.toBeNull();
+    expect(result?.username).toBe("testbot");
+  });
+
+  it("returns non-default account from multi-account config", () => {
+    const result = getAccountConfig(mockMultiAccountConfig, "secondary");
+
+    expect(result).not.toBeNull();
+    expect(result?.username).toBe("secondbot");
+  });
+
   it("returns null for non-existent account ID", () => {
-    const result = getAccountConfig(mockCoreConfig, "nonexistent");
+    const result = getAccountConfig(mockMultiAccountConfig, "nonexistent");
 
     expect(result).toBeNull();
   });

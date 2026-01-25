@@ -56,7 +56,7 @@ export function collectTwitchStatusIssues(
         accountId,
         kind: "config",
         message: "Twitch account is not properly configured",
-        fix: "Add required fields: username, token, and clientId to your account configuration",
+        fix: "Add required fields: username, accessToken, and clientId to your account configuration",
       });
       continue;
     }
@@ -72,7 +72,7 @@ export function collectTwitchStatusIssues(
       continue;
     }
 
-    if (account && account.username && account.token && !account.clientId) {
+    if (account && account.username && account.accessToken && !account.clientId) {
       issues.push({
         channel: "twitch",
         accountId,
@@ -86,7 +86,7 @@ export function collectTwitchStatusIssues(
       ? resolveTwitchToken(cfg as Parameters<typeof resolveTwitchToken>[0], { accountId })
       : { token: "", source: "none" };
     if (account && isAccountConfigured(account, tokenResolution.token)) {
-      if (account.token?.startsWith("oauth:")) {
+      if (account.accessToken?.startsWith("oauth:")) {
         issues.push({
           channel: "twitch",
           accountId,

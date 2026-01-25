@@ -11,9 +11,12 @@ Twitch chat support via IRC connection. Clawdbot connects as a Twitch user (bot 
 Status: ready for Twitch chat via IRC connection with @twurple.
 
 ## Quick setup (beginner)
-1) Install the Twitch plugin and create a Twitch application.
-2) Generate your OAuth token (recommended: use [Twitch Token Generator](https://twitchtokengenerator.com/)).
-3) Set the token for Clawdbot:
+1) Install the Twitch plugin.
+2) Generate your credentials (recommended: use [Twitch Token Generator](https://twitchtokengenerator.com/)):
+   - Select **Bot Token**
+   - Verify scopes `chat:read` and `chat:write` are selected
+   - Copy the **Client ID** and **Access Token** (and optionally **Refresh Token**)
+3) Set the credentials for Clawdbot:
    - Env: `CLAWDBOT_TWITCH_ACCESS_TOKEN=...` (default account only)
    - Or config: `channels.twitch.accounts.default.token`
    - If both are set, config takes precedence (env fallback is default-account only).
@@ -26,27 +29,28 @@ Minimal config:
   channels: {
     twitch: {
       enabled: true,
-      accounts: {
-        default: {
-          username: "clawdbot",              // Bot's Twitch account
-          token: "oauth:abc123...",          // Or omit to use CLAWDBOT_TWITCH_ACCESS_TOKEN env var
-          clientId: "your_client_id_here",
-          channel: "vevisk"                  // Which Twitch channel's chat to join
-        }
-      }
+      username: "clawdbot",              // Bot's Twitch account
+      accessToken: "oauth:abc123...",    // OAuth Access Token (or use CLAWDBOT_TWITCH_ACCESS_TOKEN env var)
+      clientId: "your_client_id",        // Client ID from Token Generator
+      channel: "vevisk"                  // Which Twitch channel's chat to join
     }
   }
 }
 ```
 
+**Note:** [Twitch Token Generator](https://twitchtokengenerator.com/) provides the Client ID and Access Token (select **Bot Token** and verify `chat:read` + `chat:write` scopes) - no manual app registration needed.
+
 **Note:** `username` is the bot's account, `channel` is which chat to join.
 
+**Multi-account setup:** Use `channels.twitch.accounts` for advanced multi-account configurations.
+
 ## How it works
-1. Create a Twitch application and bot account (or use an existing account).
-2. Configure Clawdbot with `channels.twitch.accounts.default.token` (or `CLAWDBOT_TWITCH_ACCESS_TOKEN` as a fallback).
-3. Run the gateway; it auto-starts the Twitch channel when a token is available (config first, env fallback) and `channels.twitch.enabled` is not `false`.
-4. The bot joins the specified `channel` to send/receive messages.
-5. Direct chats collapse into the agent's main session (default `agent:main:main`); each account maps to an isolated session key `agent:<agentId>:twitch:<accountName>`.
+1. Create a bot account (or use an existing Twitch account).
+2. Generate credentials using [Twitch Token Generator](https://twitchtokengenerator.com/) (provides Client ID, Access Token, and Refresh Token).
+3. Configure Clawdbot with the credentials.
+4. Run the gateway; it auto-starts the Twitch channel when a token is available (config first, env fallback) and `channels.twitch.enabled` is not `false`.
+5. The bot joins the specified `channel` to send/receive messages.
+6. Direct chats collapse into the agent's main session (default `agent:main:main`); each account maps to an isolated session key `agent:<agentId>:twitch:<accountName>`.
 
 **Key distinction:** `username` is who the bot authenticates as (the bot's account), `channel` is which chat room it joins.
 
@@ -70,22 +74,16 @@ Details: [Plugins](/plugin)
 
 ## Setup
 
-### 1) Create a Twitch application
-- Go to [Twitch Developer Console](https://dev.twitch.tv/console)
-- Click "Register Your Application"
-- Set Application Type to "Chat Bot"
-- Copy the **Client ID**
+### 1) Generate your credentials (recommended: Twitch Token Generator)
+- Go to [Twitch Token Generator](https://twitchtokengenerator.com/)
+- Select **Bot Token**
+- Verify scopes `chat:read` and `chat:write` are selected
+- Copy the **Access Token** and **Client ID**
 
-### 2) Generate your OAuth token (recommended: Twitch Token Generator)
-- Use [Twitch Token Generator](https://twitchtokengenerator.com/)
-- Select scopes: `chat:read` and `chat:write`
-- Copy the token (starts with `oauth:`)
-
-### 3) Configure credentials
+### 2) Configure credentials
 Env (default account only):
-
 ```bash
-export CLAWDBOT_TWITCH_ACCESS_TOKEN=oauth:your_token_here
+export CLAWDBOT_TWITCH_ACCESS_TOKEN=your_access_token_here
 ```
 
 Or config:
@@ -98,8 +96,8 @@ Or config:
       accounts: {
         default: {
           username: "clawdbot",              // Bot's Twitch account
-          token: "oauth:abc123...",          // Or omit to use CLAWDBOT_TWITCH_ACCESS_TOKEN env var
-          clientId: "your_client_id_here",
+          accessToken: "oauth:abc123...",    // Access Token from Token Generator (or omit to use env var)
+          clientId: "xyz789...",             // Client ID from Token Generator
           channel: "vevisk"                  // Which Twitch channel's chat to join
         }
       }
@@ -108,22 +106,25 @@ Or config:
 }
 ```
 
-**Note:** `username` is the bot's account, `channel` is which chat to join.
+**Note:** Copy the **Access Token** value to the `accessToken` property (add `oauth:` prefix if needed), and the **Client ID** value to the `clientId` property.
 
-With env, you still need `clientId` and `channel` in config (or use the minimal config above without `token`).
+With env, you still need `clientId` and `channel` in config (or use the minimal config above without `accessToken`).
 
-### 4) Start the gateway
+### 3) Start the gateway
 Twitch starts when a token is resolved (config first, env fallback).
 
-### 5) Join a channel
+### 4) Join a channel
 The bot joins the channel specified in `channel`.
 
-## Token refresh (optional, recommended for long-running bots)
+## Token refresh (optional, for long-running bots)
 
-For long-running bots, configure automatic token refresh to avoid expired tokens:
+**Important:** Tokens from [Twitch Token Generator](https://twitchtokengenerator.com/) cannot be automatically refreshed - you'll need to generate a new token when it expires (typically after several hours).
 
-1. Use [Twitch Token Generator](https://twitchtokengenerator.com/) with **"Include Refresh Token"** checked
-2. Get your **Client Secret** from [Twitch Developer Console](https://dev.twitch.tv/console)
+For automatic token refresh, you must create your own Twitch application:
+
+1. Create a Twitch application at [Twitch Developer Console](https://dev.twitch.tv/console)
+   - Copy the **Client ID** and **Client Secret**
+2. Generate a refresh token using your own app (you'll need to implement the OAuth flow or use a tool that lets you specify your Client ID)
 3. Add to config:
 
 ```json5
@@ -133,10 +134,10 @@ For long-running bots, configure automatic token refresh to avoid expired tokens
       accounts: {
         default: {
           username: "clawdbot",
-          token: "oauth:abc123...",
-          clientId: "your_client_id",
-          clientSecret: "your_client_secret",
-          refreshToken: "your_refresh_token",
+          accessToken: "oauth:abc123...",    // Access Token from your app
+          clientId: "xyz789...",             // Client ID from your app
+          clientSecret: "secret123...",      // Client Secret from your app
+          refreshToken: "refresh456...",     // Refresh Token from your app
           expiresIn: 14400,
           obtainmentTimestamp: 1706092800000
         }
@@ -145,6 +146,8 @@ For long-running bots, configure automatic token refresh to avoid expired tokens
   }
 }
 ```
+
+**Note:** All three values (`accessToken`, `clientId`, `refreshToken`) must come from the same Twitch application you created.
 
 The bot automatically refreshes tokens before they expire and logs refresh events.
 
@@ -165,14 +168,14 @@ Example (one bot account in two different channels):
       accounts: {
         ninjaChannel: {
           username: "clawdbot",
-          token: "oauth:...",
-          clientId: "...",
+          accessToken: "oauth:abc123...",
+          clientId: "xyz789...",
           channel: "vevisk"
         },
         shroudChannel: {
           username: "clawdbot",
-          token: "oauth:...",
-          clientId: "...",
+          accessToken: "oauth:def456...",
+          clientId: "uvw012...",
           channel: "secondchannel"
         }
       }
@@ -180,6 +183,66 @@ Example (one bot account in two different channels):
   }
 }
 ```
+
+## Migration notes
+
+### Breaking changes (2026.1.23+)
+
+**`token` renamed to `accessToken`:** If you have existing Twitch config using `token`, update to `accessToken`:
+
+**Before:**
+```json5
+{
+  channels: {
+    twitch: {
+      accounts: {
+        default: {
+          username: "clawdbot",
+          token: "oauth:abc123...",
+          clientId: "xyz789...",
+          channel: "vevisk"
+        }
+      }
+    }
+  }
+}
+```
+
+**After:**
+```json5
+{
+  channels: {
+    twitch: {
+      accounts: {
+        default: {
+          username: "clawdbot",
+          accessToken: "oauth:abc123...",
+          clientId: "xyz789...",
+          channel: "vevisk"
+        }
+      }
+    }
+  }
+}
+```
+
+**Simplified config (recommended):** For single-account setups, you can now use base-level properties:
+
+```json5
+{
+  channels: {
+    twitch: {
+      enabled: true,
+      username: "clawdbot",
+      accessToken: "oauth:abc123...",
+      clientId: "xyz789...",
+      channel: "vevisk"
+    }
+  }
+}
+```
+
+The env var `CLAWDBOT_TWITCH_ACCESS_TOKEN` continues to work for the default account.
 
 ## Access control
 
@@ -194,8 +257,8 @@ Restrict access to specific roles:
       accounts: {
         default: {
           username: "mybot",
-          token: "oauth:...",
-          clientId: "...",
+          accessToken: "oauth:abc123...",
+          clientId: "xyz789...",
           channel: "your_channel",
           allowedRoles: ["moderator", "vip"]
         }
@@ -223,8 +286,8 @@ Only allow specific Twitch user IDs (most secure):
       accounts: {
         default: {
           username: "mybot",
-          token: "oauth:...",
-          clientId: "...",
+          accessToken: "oauth:abc123...",
+          clientId: "xyz789...",
           channel: "your_channel",
           allowFrom: ["123456789", "987654321"]
         }
@@ -252,8 +315,8 @@ Users in `allowFrom` bypass role checks. In this example:
       accounts: {
         default: {
           username: "mybot",
-          token: "oauth:...",
-          clientId: "...",
+          accessToken: "oauth:abc123...",
+          clientId: "xyz789...",
           channel: "your_channel",
           allowFrom: ["123456789"],
           allowedRoles: ["moderator"]
@@ -275,8 +338,8 @@ Only respond when the bot is mentioned:
       accounts: {
         default: {
           username: "mybot",
-          token: "oauth:...",
-          clientId: "...",
+          accessToken: "oauth:abc123...",
+          clientId: "xyz789...",
           channel: "your_channel",
           requireMention: true
         }
@@ -290,14 +353,14 @@ Only respond when the bot is mentioned:
 
 For the default account, you can use environment variables instead of config:
 
-- `CLAWDBOT_TWITCH_ACCESS_TOKEN` - OAuth token (with `oauth:` prefix)
+- `CLAWDBOT_TWITCH_ACCESS_TOKEN` - Access Token (without `oauth:` prefix)
 
 Env fallback only works for the default account. For multi-account setups, use config.
 
 Example:
 
 ```bash
-export CLAWDBOT_TWITCH_ACCESS_TOKEN=oauth:abc123def456...
+export CLAWDBOT_TWITCH_ACCESS_TOKEN=abc123def456...
 ```
 
 Config with env fallback:
@@ -310,7 +373,7 @@ Config with env fallback:
       accounts: {
         default: {
           username: "mybot",
-          clientId: "your_client_id",
+          clientId: "xyz789...",
           channel: "your_channel"
           // token will be read from CLAWDBOT_TWITCH_ACCESS_TOKEN
         }
@@ -380,8 +443,8 @@ clawdbot channels status --probe
       accounts: {
         default: {
           username: "mybot",
-          token: "oauth:...",
-          clientId: "...",
+          accessToken: "oauth:abc123...",
+          clientId: "xyz789...",
           channel: "your_channel",
           // Temporary: allow everyone
           allowedRoles: ["all"]
@@ -397,7 +460,7 @@ clawdbot channels status --probe
 ### Token issues
 
 **"Failed to connect" or authentication errors:**
-- Verify token starts with `oauth:`
+- Verify `accessToken` is the OAuth access token value (typically starts with `oauth:` prefix)
 - Check token has `chat:read` and `chat:write` scopes
 - If using RefreshingAuthProvider, verify `clientSecret` and `refreshToken` are set
 
@@ -422,14 +485,14 @@ Full configuration: [Configuration](/gateway/configuration)
 ```typescript
 {
   username: string,           // Bot username
-  token: string,              // OAuth token with chat:read and chat:write
-  clientId: string,           // Twitch Client ID
+  accessToken: string,        // OAuth access token with chat:read and chat:write
+  clientId: string,           // Twitch Client ID (from Token Generator site or your app)
   channel: string,            // Channel to join
   enabled?: boolean,          // Enable this account (default: true)
-  clientSecret?: string,      // For RefreshingAuthProvider
-  refreshToken?: string,      // For RefreshingAuthProvider
-  expiresIn?: number,         // Token expiry in seconds
-  obtainmentTimestamp?: number, // Token obtained timestamp
+  clientSecret?: string,      // Optional: For automatic token refresh (from YOUR Twitch app)
+  refreshToken?: string,      // Optional: For automatic token refresh (from YOUR Twitch app)
+  expiresIn?: number,         // Token expiry in seconds (for refresh)
+  obtainmentTimestamp?: number, // Token obtained timestamp (for refresh)
   allowFrom?: string[],       // User ID allowlist
   allowedRoles?: TwitchRole[], // Role-based access control
   requireMention?: boolean    // Require @mention (default: false)
@@ -448,13 +511,17 @@ Full configuration: [Configuration](/gateway/configuration)
 
 Provider options:
 - `channels.twitch.enabled`: enable/disable channel startup.
-- `channels.twitch.accounts.<accountName>.username`: bot username.
-- `channels.twitch.accounts.<accountName>.token`: OAuth token.
-- `channels.twitch.accounts.<accountName>.clientId`: Twitch Client ID.
+- `channels.twitch.username`: bot username (simplified single-account config).
+- `channels.twitch.accessToken`: OAuth access token (simplified single-account config).
+- `channels.twitch.clientId`: Twitch Client ID (simplified single-account config).
+- `channels.twitch.channel`: channel to join (simplified single-account config).
+- `channels.twitch.accounts.<accountName>.username`: bot username (multi-account config).
+- `channels.twitch.accounts.<accountName>.accessToken`: OAuth access token (multi-account config).
+- `channels.twitch.accounts.<accountName>.clientId`: Twitch Client ID (from Token Generator or your app).
 - `channels.twitch.accounts.<accountName>.channel`: channel to join.
 - `channels.twitch.accounts.<accountName>.enabled`: enable/disable account (default: true).
-- `channels.twitch.accounts.<accountName>.clientSecret`: for RefreshingAuthProvider.
-- `channels.twitch.accounts.<accountName>.refreshToken`: for RefreshingAuthProvider.
+- `channels.twitch.accounts.<accountName>.clientSecret`: optional, for automatic token refresh (must be from YOUR Twitch app).
+- `channels.twitch.accounts.<accountName>.refreshToken`: optional, for automatic token refresh (must be from YOUR Twitch app).
 - `channels.twitch.accounts.<accountName>.expiresIn`: token expiry in seconds.
 - `channels.twitch.accounts.<accountName>.obtainmentTimestamp`: token obtained timestamp.
 - `channels.twitch.accounts.<accountName>.allowFrom`: user ID allowlist.

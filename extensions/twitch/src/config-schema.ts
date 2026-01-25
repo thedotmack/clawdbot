@@ -12,8 +12,8 @@ const TwitchRoleSchema = z.enum(["moderator", "owner", "vip", "subscriber", "all
 const TwitchAccountSchema = z.object({
   /** Twitch username */
   username: z.string(),
-  /** Twitch OAuth token (requires chat:read and chat:write scopes) */
-  token: z.string(),
+  /** Twitch OAuth access token (requires chat:read and chat:write scopes) */
+  accessToken: z.string(),
   /** Twitch client ID (from Twitch Developer Portal or twitchtokengenerator.com) */
   clientId: z.string().optional(),
   /** Channel name to join (defaults to username) */
@@ -37,12 +37,48 @@ const TwitchAccountSchema = z.object({
 });
 
 /**
- * Twitch plugin configuration schema
+ * Simplified single-account configuration schema
+ *
+ * Use this for single-account setups. Properties are at the top level,
+ * creating an implicit "default" account.
  */
-export const TwitchConfigSchema = z.object({
-  name: z.string().optional(),
-  enabled: z.boolean().optional(),
-  markdown: MarkdownConfigSchema.optional(),
-  /** Per-account configuration */
-  accounts: z.record(z.string(), TwitchAccountSchema).optional(),
-});
+const simplifiedSchema = z.intersection(
+  z.object({
+    name: z.string().optional(),
+    enabled: z.boolean().optional(),
+    markdown: MarkdownConfigSchema.optional(),
+  }),
+  TwitchAccountSchema,
+);
+
+/**
+ * Multi-account configuration schema
+ *
+ * Use this for multi-account setups. Each key is an account ID (e.g., "default", "secondary").
+ */
+const multiAccountSchema = z.intersection(
+  z.object({
+    name: z.string().optional(),
+    enabled: z.boolean().optional(),
+    markdown: MarkdownConfigSchema.optional(),
+  }),
+  z
+    .object({
+      /** Per-account configuration (for multi-account setups) */
+      accounts: z.record(z.string(), TwitchAccountSchema),
+    })
+    .refine((val) => Object.keys(val.accounts || {}).length > 0, {
+      message: "accounts must contain at least one entry",
+    }),
+);
+
+/**
+ * Twitch plugin configuration schema
+ *
+ * Supports two mutually exclusive patterns:
+ * 1. Simplified single-account: username, accessToken, clientId, channel at top level
+ * 2. Multi-account: accounts object with named account configs
+ *
+ * The union ensures clear discrimination between the two modes.
+ */
+export const TwitchConfigSchema = z.union([simplifiedSchema, multiAccountSchema]);

@@ -68,11 +68,11 @@ export function normalizeToken(token: string): string {
 export function isAccountConfigured(
   account: {
     username?: string;
-    token?: string;
+    accessToken?: string;
     clientId?: string;
   },
   resolvedToken?: string | null,
 ): boolean {
-  const token = resolvedToken ?? account?.token;
+  const token = resolvedToken ?? account?.accessToken;
   return Boolean(account?.username && token && account?.clientId);
 }

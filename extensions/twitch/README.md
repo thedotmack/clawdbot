@@ -18,7 +18,23 @@ Onboarding: select Twitch and confirm the install prompt to fetch the plugin aut
 
 ## Config
 
-Minimal config:
+Minimal config (simplified single-account):
+
+```json5
+{
+  channels: {
+    twitch: {
+      enabled: true,
+      username: "clawdbot",
+      accessToken: "oauth:abc123...", // OAuth Access Token (add oauth: prefix)
+      clientId: "xyz789...", // Client ID from Token Generator
+      channel: "vevisk", // Channel to join
+    },
+  },
+}
+```
+
+Multi-account config (advanced):
 
 ```json5
 {
@@ -28,9 +44,15 @@ Minimal config:
       accounts: {
         default: {
           username: "clawdbot",
-          token: "oauth:abc123...",
-          clientId: "your_client_id_here",
+          accessToken: "oauth:abc123...",
+          clientId: "xyz789...",
           channel: "vevisk",
+        },
+        channel2: {
+          username: "clawdbot",
+          accessToken: "oauth:def456...",
+          clientId: "uvw012...",
+          channel: "secondchannel",
         },
       },
     },
@@ -40,10 +62,12 @@ Minimal config:
 
 ## Setup
 
-1. Create a Twitch application: [Twitch Developer Console](https://dev.twitch.tv/console)
-2. Generate OAuth token: [Twitch Token Generator](https://twitchtokengenerator.com/)
-   - Select scopes: `chat:read` and `chat:write`
-3. Start the gateway
+1. Generate credentials: [Twitch Token Generator](https://twitchtokengenerator.com/)
+   - Select **Bot Token**
+   - Verify scopes `chat:read` and `chat:write` are selected
+   - Copy the **Access Token** to `token` property
+   - Copy the **Client ID** to `clientId` property
+2. Start the gateway
 
 ## Full documentation
 
