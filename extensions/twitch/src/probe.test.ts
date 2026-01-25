@@ -58,6 +58,7 @@ describe("probeTwitch", () => {
   const mockAccount: TwitchAccountConfig = {
     username: "testbot",
     token: "oauth:test123456789",
+    channel: "testchannel",
   };
 
   beforeEach(() => {
@@ -101,7 +102,7 @@ describe("probeTwitch", () => {
     expect(result.ok).toBe(true);
     expect(result.connected).toBe(true);
     expect(result.username).toBe("testbot");
-    expect(result.channel).toBe("testbot"); // defaults to username
+    expect(result.channel).toBe("testchannel"); // uses account's configured channel
     expect(result.elapsedMs).toBeGreaterThan(0);
   });
 

@@ -219,7 +219,7 @@ describe("outbound", () => {
     it("should throw when no channel specified", async () => {
       const { getAccountConfig } = await import("./config.js");
 
-      const accountWithoutChannel = { ...mockAccount, channel: undefined, username: undefined };
+      const accountWithoutChannel = { ...mockAccount, channel: undefined as unknown as string };
       vi.mocked(getAccountConfig).mockReturnValue(accountWithoutChannel);
 
       await expect(

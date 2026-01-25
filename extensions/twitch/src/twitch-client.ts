@@ -125,12 +125,10 @@ export class TwitchClientManager {
     // Create auth provider
     const authProvider = await this.createAuthProvider(account, normalizedToken);
 
-    const channel = account.channel ?? account.username;
-
     // Create chat client
     const client = new ChatClient({
       authProvider,
-      channels: [channel],
+      channels: [account.channel],
       rejoinChannelsOnReconnect: true,
       requestMembershipEvents: true,
       logger: {
@@ -301,7 +299,7 @@ export class TwitchClientManager {
    * Generate a unique key for an account
    */
   public getAccountKey(account: TwitchAccountConfig): string {
-    return `${account.username}:${account.channel ?? account.username}`;
+    return `${account.username}:${account.channel}`;
   }
 
   /**

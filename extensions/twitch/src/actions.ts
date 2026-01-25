@@ -138,9 +138,8 @@ export const twitchMessageActions: ChannelMessageActionAdapter = {
       );
     }
 
-    // Use the channel from account config if not specified
-    const targetChannel = to || account.channel || account.username;
-
+    // Use the channel from account config (or override with `to` parameter)
+    const targetChannel = to || account.channel;
     if (!targetChannel) {
       return errorResponse("No channel specified and no default channel in account config");
     }

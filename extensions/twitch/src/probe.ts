@@ -102,7 +102,7 @@ export async function probeTwitch(
       ok: true,
       connected: true,
       username: account.username,
-      channel: account.channel ?? account.username,
+      channel: account.channel,
       elapsedMs: Date.now() - started,
     };
   } catch (error) {
@@ -110,7 +110,7 @@ export async function probeTwitch(
       ok: false,
       error: error instanceof Error ? error.message : String(error),
       username: account.username,
-      channel: account.channel ?? account.username,
+      channel: account.channel,
       elapsedMs: Date.now() - started,
     };
   } finally {

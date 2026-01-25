@@ -124,8 +124,8 @@ export const twitchOutbound: ChannelOutboundAdapter = {
       );
     }
 
-    // Get channel (support target parameter)
-    const channel = to || account.channel || account.username;
+    // Get channel (support target parameter override)
+    const channel = to || account.channel;
     if (!channel) {
       throw new Error("No channel specified and no default channel in account config");
     }

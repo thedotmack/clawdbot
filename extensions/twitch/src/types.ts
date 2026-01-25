@@ -53,8 +53,8 @@ export interface TwitchAccountConfig {
   token: string;
   /** Twitch client ID (from Twitch Developer Portal or twitchtokengenerator.com) */
   clientId?: string;
-  /** Channel name to join (defaults to username) */
-  channel?: string;
+  /** Channel name to join (required) */
+  channel: string;
   /** Enable this account */
   enabled?: boolean;
   /** Allowlist of Twitch user IDs who can interact with the bot (use IDs for safety, not usernames) */

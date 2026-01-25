@@ -163,13 +163,12 @@ describe("send", () => {
       const { getAccountConfig } = await import("./config.js");
       const { isAccountConfigured } = await import("./utils/twitch.js");
 
-      // Set both channel and username to undefined to trigger the error
-      const accountWithoutChannelOrUsername = {
+      // Set channel to undefined to trigger the error (bypassing type check)
+      const accountWithoutChannel = {
         ...mockAccount,
-        channel: undefined,
-        username: undefined,
+        channel: undefined as unknown as string,
       };
-      vi.mocked(getAccountConfig).mockReturnValue(accountWithoutChannelOrUsername);
+      vi.mocked(getAccountConfig).mockReturnValue(accountWithoutChannel);
       vi.mocked(isAccountConfigured).mockReturnValue(true);
 
       const result = await sendMessageTwitchInternal(

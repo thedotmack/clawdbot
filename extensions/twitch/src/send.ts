@@ -78,8 +78,8 @@ export async function sendMessageTwitchInternal(
     };
   }
 
-  // Normalize channel
-  const normalizedChannel = channel || account.channel || account.username;
+  // Normalize channel (parameter override, then account channel)
+  const normalizedChannel = channel || account.channel;
   if (!normalizedChannel) {
     return {
       ok: false,
